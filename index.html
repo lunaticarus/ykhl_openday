@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>開放日集章與資訊平台</title>
+  
+  <!-- 引入 QR Code 生成與 HTML5 相機掃描 Libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
+    
+    /* 頂部即時公告跑馬燈 */
+    .marquee { background: #ff9800; color: #fff; padding: 10px 15px; font-weight: bold; overflow: hidden; white-space: nowrap; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .marquee-content { display: inline-block; animation: marquee 15s linear infinite; }
+    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+    .container { padding: 15px; max-width: 480px; margin: 0 auto; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 15px; text-align: center; }
+    
+    /* 印章網格設計 */
+    .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
+    .stamp-box { aspect-ratio: 1; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #aaa; font-size: 14px; position: relative; background: #fafafa; }
+    .stamp-box.active { border: 2px solid #4caf50; background-color: #e8f5e9; color: #4caf50; font-size: 18px; }
+    .stamp-box.special { border-color: #ff9800; background-color: #fff8e1; }
+    .stamp-box.special::after { content: '🎁'; font-size: 10px; position: absolute; top: 2px; right: 2px; }
+
+    /* 通用元件 */
+    .btn { background: #2196f3; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+    .btn:active { background: #1976d2; }
+    .btn-secondary { background: #666; }
+    select, input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; outline: none; }
+    #qrcode { display: flex; justify-content: center; margin: 15px 0; }
+    
+    /* Loading 指示器 */
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; color: white; font-size: 18px; flex-direction: column; }
+    .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid white; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- 全局 Loading 畫面 -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div id="loadingText">處理中，請稍候...</div>
+</div>
+
+<!-- 即時跑馬燈公告 -->
+<div class="marquee">
+  <div class="marquee-content" id="marqueeText">歡迎來到開放日！集滿 10 個印章可換領階段一禮物！</div>
+</div>
+
+<div class="container">
+  
+  <!-- 1. 首次進入選取身分 卡片 -->
+  <div id="roleSelectCard" class="card">
+    <h2 style="margin-top:0; color:#2196f3;">歡迎光臨開放日</h2>
+    <p style="color:#666; font-size:14px;">請選擇您的身分以開啟數位集章卡：</p>
+    <select id="roleSelect">
+      <option value="本校學生">本校學生</option>
+      <option value="本校家長">本校家長</option>
+      <option value="小學學生">小學學生</option>
+      <option value="小學家長">小學家長</option>
+      <option value="其他來賓">其他來賓</option>
+    </select>
+    <button class="btn" onclick="registerRole()">開始體驗集章</button>
+  </div>
+
+  <!-- 2. 來賓主要介面 (QR Code + 集章卡) -->
+  <div id="guestMainCard" class="card" style="display:none;">
+    <h3 style="margin-top:0;">專屬蓋印 QR Code</h3>
+    <p style="color:#666; font-size:12px; margin-bottom:5px;">請向攤位工作人員出示（每 15 秒自動防偽刷新）</p>
+    <div id="qrcode"></div>
+    <p style="font-size:14px; color:#555; margin:5px 0;">來賓編號：<strong id="displayGuestID" style="color:#2196f3;">---</strong></p>
+    
+    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+    
+    <h3 style="margin-bottom:5px;">數位印章卡 (<span id="stampCount" style="color:#2196f3;">0</span>/20)</h3>
+    <div class="stamp-grid" id="stampGrid"></div>
+    
+    <div style="margin-top:15px; text-align:left; font-size: 13px; background:#f9f9f9; padding:10px; border-radius:8px;">
+      <p style="margin:4px 0;">🎁 階段一禮物 (10印)：<strong id="statusStage1">未達標</strong></p>
+      <p style="margin:4px 0;">🎁 階段二禮物 (20印)：<strong id="statusStage2">未達標</strong></p>
+    </div>
+  </div>
+
+  <!-- 3. 工作人員切換連結 -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button style="background:none; border:none; color:#888; text-decoration:underline; font-size:13px; cursor:pointer;" onclick="toggleStaffMode()">切換至工作人員/兌換處模式</button>
+  </div>
+
+  <!-- 4. 工作人員/兌換處掃描介面 -->
+  <div id="staffCard" class="card" style="display:none;">
+    <h3 style="margin-top:0;">工作人員掃描系統</h3>
+    <input type="text" id="boothIDInput" placeholder="攤位 ID (如 B01，兌換處填 GIFT)">
+    <input type="password" id="pinInput" placeholder="請輸入 PIN 密碼">
+    
+    <div id="reader" style="width:100%; border-radius:8px; overflow:hidden; margin-bottom:10px;"></div>
+    
+    <button class="btn btn-secondary" onclick="toggleStaffMode()">返回來賓模式</button>
+  </div>
+
+</div>
+
+<script>
+  // ⚠️ 請務必將此處替換為你實際部署的 Google Apps Script Web App URL
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx_YOUR_DEPLOYMENT_ID_xxxxxxx/exec";
+
+  let guestID = localStorage.getItem('openDay_guestID');
+  let qrCodeObj = null;
+  let html5QrcodeScanner = null;
+
+  window.onload = function() {
+    fetchAnnouncement();
+    if (guestID) {
+      document.getElementById('roleSelectCard').style.display = 'none';
+      document.getElementById('guestMainCard').style.display = 'block';
+      document.getElementById('displayGuestID').innerText = guestID;
+      startDynamicQR();
+      refreshGuestStatus();
+    }
+  };
+
+  // 封裝通用 fetch API 請求
+  function apiPost(payload, callback) {
+    showLoading(true);
+    fetch(GAS_API_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      showLoading(false);
+      callback(data);
+    })
+    .catch(err => {
+      showLoading(false);
+      alert('連線失敗，請檢查網絡：' + err);
+    });
+  }
+
+  function showLoading(enable, text = "處理中，請稍候...") {
+    document.getElementById('loadingText').innerText = text;
+    document.getElementById('loading').style.display = enable ? 'flex' : 'none';
+  }
+
+  // 1. 來賓登記身分
+  function registerRole() {
+    const role = document.getElementById('roleSelect').value;
+    apiPost({ action: 'registerGuest', role: role }, function(res) {
+      if (res.status === 'success') {
+        guestID = res.guestID;
+        localStorage.setItem('openDay_guestID', guestID);
+        location.reload();
+      } else {
+        alert(res.message);
+      }
+    });
+  }
+
+  // 2. 動態 QR Code 生成 (防止截圖防偽)
+  function startDynamicQR() {
+    qrCodeObj = new QRCode(document.getElementById("qrcode"), { width: 160, height: 160 });
+    updateQR();
+    setInterval(updateQR, 15000); // 每 15 秒更新一次戳記
+  }
+
+  function updateQR() {
+    if (!guestID) return;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const payload = `${guestID}|${timestamp}`;
+    qrCodeObj.clear();
+    qrCodeObj.makeCode(payload);
+  }
+
+  // 3. 渲染 20 格印章介面
+  function renderStamps(count, stage1, stage2) {
+    document.getElementById('stampCount').innerText = count;
+    document.getElementById('statusStage1').innerText = stage1 ? "已領取 ✅" : (count >= 10 ? "可兌換 🎁" : "未達標");
+    document.getElementById('statusStage2').innerText = stage2 ? "已領取 ✅" : (count >= 20 ? "可兌換 🎁" : "未達標");
+
+    const grid = document.getElementById('stampGrid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 20; i++) {
+      const box = document.createElement('div');
+      box.className = `stamp-box ${i <= count ? 'active' : ''} ${(i===10||i===20) ? 'special' : ''}`;
+      box.innerText = i <= count ? '✓' : i;
+      grid.appendChild(box);
+    }
+  }
+
+  function refreshGuestStatus() {
+    apiPost({ action: 'getGuestStatus', guestID: guestID }, function(res) {
+      if (res.status === 'success') {
+        renderStamps(res.guest.stamps, res.guest.stage1, res.guest.stage2);
+      }
+    });
+  }
+
+  function fetchAnnouncement() {
+    apiPost({ action: 'getAnnouncement' }, function(res) {
+      if (res.status === 'success' && res.message) {
+        document.getElementById('marqueeText').innerText = res.message;
+      }
+    });
+  }
+
+  // 4. 工作人員切換與相機掃描控制 (完整支援 iPad Safari)
+  function toggleStaffMode() {
+    const staffCard = document.getElementById('staffCard');
+    if (staffCard.style.display === 'none') {
+      staffCard.style.display = 'block';
+      document.getElementById('guestMainCard').style.display = 'none';
+      document.getElementById('roleSelectCard').style.display = 'none';
+      
+      // 初始化 html5Qrcode 相機鏡頭
+      if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+          fps: 10, 
+          qrbox: { width: 220, height: 220 },
+          rememberLastUsedCamera: true
+        });
+      }
+      html5QrcodeScanner.render(onScanSuccess);
+    } else {
+      staffCard.style.display = 'none';
+      if (guestID) document.getElementById('guestMainCard').style.display = 'block';
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+      }
+    }
+  }
+
+  // 掃描成功後的處理邏輯
+  function onScanSuccess(decodedText) {
+    const boothID = document.getElementById('boothIDInput').value.trim();
+    const pinCode = document.getElementById('pinInput').value.trim();
+
+    if (!boothID || !pinCode) {
+      alert('請先輸入攤位 ID 與 PIN 密碼！');
+      return;
+    }
+
+    // 暫停掃描以免重複觸發
+    html5QrcodeScanner.pause();
+
+    if (boothID.toUpperCase() === 'GIFT') {
+      const isStage1 = confirm('按「確定」兌換【階段一 (10印)】禮物\n按「取消」兌換【階段二 (20印)】禮物');
+      const stage = isStage1 ? 1 : 2;
+      
+      apiPost({ action: 'redeemGift', boothID: boothID, pinCode: pinCode, qrPayload: decodedText, stage: stage }, function(res) {
+        alert(res.message);
+        html5QrcodeScanner.resume();
+      });
+    } else {
+      apiPost({ action: 'addStamp', boothID: boothID, pinCode: pinCode, qrPayload: decodedText }, function(res) {
+        alert(res.message);
+        html5QrcodeScanner.resume();
+      });
+    }
+  }
+</script>
+</body>
+</html>
