@@ -125,23 +125,31 @@
     }
   };
 
-  // 封裝通用 fetch API 請求
+// 修正後的 API 請求函數 (解決 Safari CORS/TypeError: Load failed)
   function apiPost(payload, callback) {
     showLoading(true);
+    
+    // 使用 URLSearchParams 格式發送，避開 Safari 預檢鎖定
     fetch(GAS_API_URL, {
       method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      redirect: 'follow', // 關鍵：跟隨 GAS 的 302 重定向
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8' // 必須使用 text/plain 以通過 CORS 預檢
+      },
       body: JSON.stringify(payload)
     })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error('網絡回應不正常');
+      return res.json();
+    })
     .then(data => {
       showLoading(false);
       callback(data);
     })
     .catch(err => {
       showLoading(false);
-      alert('連線失敗，請檢查網絡：' + err);
+      console.error(err);
+      alert('連線失敗，請檢查網址或網絡：\n' + err);
     });
   }
 
