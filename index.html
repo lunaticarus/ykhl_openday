@@ -5,30 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>校園開放日 2026 - 電子集章導覽平台</title>
   
-  <!-- 載入 Neo-brutality 指定 Google 字型：Space Grotesk -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- jsQR 掃描解碼庫 -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <script>
-    // 配置 Neo-brutalism 設計 Token 到 Tailwind
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Space Grotesk', 'sans-serif'],
-          },
+          fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
           colors: {
-            'neo-bg': '#FFFDF5',        // Cream Background
-            'neo-black': '#000000',     // Ink Black
-            'neo-red': '#FF6B6B',       // Hot Red
-            'neo-yellow': '#FFD93D',    // Vivid Yellow
-            'neo-violet': '#C4B5FD',    // Soft Violet
+            'neo-bg': '#FFFDF5',
+            'neo-black': '#000000',
+            'neo-red': '#FF6B6B',
+            'neo-yellow': '#FFD93D',
+            'neo-violet': '#C4B5FD',
           },
           boxShadow: {
             'neo-sm': '4px 4px 0px 0px #000000',
@@ -42,39 +36,33 @@
   </script>
 
   <style>
-    /* Neo-brutalism 網點背景 (Halftone Dots) */
     body {
       background-color: #FFFDF5;
       background-image: radial-gradient(#000000 1.5px, transparent 1.5px);
       background-size: 24px 24px;
     }
-
-    /* 閃爍防偽背景 */
     @keyframes neo-flash {
       0%, 100% { background-color: #FF6B6B; }
       50% { background-color: #FFD93D; }
     }
-    .animate-neo-flash {
-      animation: neo-flash 1.5s infinite steps(1);
-    }
+    .animate-neo-flash { animation: neo-flash 1.5s infinite steps(1); }
   </style>
 </head>
 <body class="text-neo-black font-sans pb-24 selection:bg-neo-yellow">
 
-  <!-- 頂部跑馬燈 (Neo-brutalism 撞色風) -->
+  <!-- 頂部動態跑馬燈 -->
   <div class="bg-neo-yellow border-b-4 border-neo-black py-2.5 px-4 overflow-hidden whitespace-nowrap shadow-neo-sm">
-    <div class="inline-block animate-marquee font-black text-sm tracking-wide uppercase">
-      ⚡ 歡迎來到學校開放日 2026！ ⚡ 集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡ 請勿更換瀏覽器以防紀錄遺失！ ⚡
+    <div id="marquee-text" class="inline-block animate-marquee font-black text-sm tracking-wide uppercase">
+      ⚡ 歡迎光臨學校開放日 2026！集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡
     </div>
   </div>
 
-  <!-- 主內容容器 -->
   <main class="max-w-md mx-auto p-4 space-y-6">
 
-    <!-- 標頭 Banner (貼紙傾斜效果) -->
+    <!-- 標頭 Banner -->
     <header class="bg-neo-violet border-4 border-neo-black p-5 shadow-neo-lg -rotate-1 relative">
-      <div class="absolute -top-4 -right-3 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-6 shadow-neo-sm">
-        LIVE 2026
+      <div id="user-role-badge" class="absolute -top-4 -right-3 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-6 shadow-neo-sm">
+        訪客
       </div>
       <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-neo-black">
         校園開放日<br><span class="bg-neo-yellow px-2 border-2 border-neo-black inline-block mt-1">集章闖關</span>
@@ -91,20 +79,18 @@
         </span>
       </div>
 
-      <!-- 進度條 -->
       <div class="w-full bg-slate-100 border-4 border-neo-black h-7 relative overflow-hidden">
         <div id="progress-bar" class="bg-neo-red h-full w-0 border-r-4 border-neo-black transition-all duration-300"></div>
       </div>
 
-      <!-- 獎項兌換按鈕 -->
       <div id="reward-action-area" class="pt-2">
-        <button id="btn-redeem" onclick="openRedeemModal()" class="w-full py-4 bg-slate-200 text-slate-400 font-black border-4 border-neo-black shadow-neo-sm uppercase tracking-wide cursor-not-allowed" disabled>
+        <button id="btn-redeem" class="w-full py-4 bg-slate-200 text-slate-400 font-black border-4 border-neo-black shadow-neo-sm uppercase tracking-wide cursor-not-allowed" disabled>
           🔒 未達門檻 (需至少 10 印章)
         </button>
       </div>
     </section>
 
-    <!-- 掃描與輸入按鈕組 (機械式壓下動效) -->
+    <!-- 按鈕組 -->
     <section class="grid grid-cols-5 gap-3">
       <button onclick="startScanner()" class="col-span-3 py-4 bg-neo-red hover:bg-neo-red/90 text-white font-black text-lg border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2 uppercase tracking-wide">
         📷 開啟鏡頭掃碼
@@ -114,40 +100,31 @@
       </button>
     </section>
 
-    <!-- 17 個地點 Stamp 格子區 -->
+    <!-- 17 地點格子區 -->
     <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
       <div class="flex justify-between items-center border-b-2 border-neo-black pb-2">
         <h3 class="font-black text-sm uppercase tracking-wider">17 地點導覽圖</h3>
-        <span class="text-xs font-bold bg-neo-violet border border-neo-black px-2 py-0.5">點擊即時檢視</span>
+        <span class="text-xs font-bold bg-neo-violet border border-neo-black px-2 py-0.5">即時檢視</span>
       </div>
-      
-      <div id="booth-grid" class="grid grid-cols-4 gap-2 text-center">
-        <!-- 由 JavaScript 動態繪製 17 個 Neo-brutalist 貼紙格子 -->
-      </div>
-    </section>
-
-    <!-- 工作坊行程 -->
-    <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
-      <h3 class="font-black text-sm uppercase tracking-wider border-b-2 border-neo-black pb-2">⚡ 工作坊即時行程</h3>
-      <div class="space-y-2.5">
-        <div class="p-3 bg-neo-bg border-2 border-neo-black flex justify-between items-center shadow-neo-sm">
-          <div>
-            <div class="font-black text-sm">VR 虛擬實境體驗</div>
-            <div class="text-xs font-bold text-slate-600">地點：3F 電腦室</div>
-          </div>
-          <span class="bg-neo-yellow border border-neo-black font-black text-xs px-2 py-1">14:00 - 14:30</span>
-        </div>
-        <div class="p-3 bg-neo-bg border-2 border-neo-black flex justify-between items-center shadow-neo-sm">
-          <div>
-            <div class="font-black text-sm">科學驚奇小實驗</div>
-            <div class="text-xs font-bold text-slate-600">地點：2F 綜合實驗室</div>
-          </div>
-          <span class="bg-neo-violet border border-neo-black font-black text-xs px-2 py-1">14:30 - 15:00</span>
-        </div>
-      </div>
+      <div id="booth-grid" class="grid grid-cols-4 gap-2 text-center"></div>
     </section>
 
   </main>
+
+  <!-- 彈窗 0：首次進入選擇身份 Modal -->
+  <div id="role-modal" class="fixed inset-0 bg-neo-black/80 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4 text-center">
+      <h2 class="text-2xl font-black uppercase border-b-4 border-neo-black pb-2">歡迎光臨！請選擇身份</h2>
+      <p class="text-xs font-bold text-slate-600">選擇身份以開始參與集章活動：</p>
+      <div class="space-y-2.5 pt-2">
+        <button onclick="selectRole('小學家長/學生')" class="w-full py-3 bg-neo-yellow font-black border-4 border-neo-black shadow-neo-sm hover:bg-yellow-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-sm uppercase">小學家長/學生</button>
+        <button onclick="selectRole('本校家長')" class="w-full py-3 bg-neo-violet font-black border-4 border-neo-black shadow-neo-sm hover:bg-violet-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-sm uppercase">本校家長</button>
+        <button onclick="selectRole('本校學生')" class="w-full py-3 bg-neo-red text-white font-black border-4 border-neo-black shadow-neo-sm hover:bg-red-500 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-sm uppercase">本校學生</button>
+        <button onclick="selectRole('校友')" class="w-full py-3 bg-white font-black border-4 border-neo-black shadow-neo-sm hover:bg-slate-100 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-sm uppercase">校友</button>
+        <button onclick="selectRole('公眾')" class="w-full py-3 bg-slate-200 font-black border-4 border-neo-black shadow-neo-sm hover:bg-slate-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-sm uppercase">公眾</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 彈窗 1：相機掃描 Modal -->
   <div id="scanner-modal" class="fixed inset-0 bg-neo-black/80 hidden z-50 flex flex-col items-center justify-center p-4">
@@ -160,7 +137,6 @@
         <video id="scanner-video" class="w-full h-64 object-cover" playsinline></video>
         <canvas id="scanner-canvas" class="hidden"></canvas>
       </div>
-      <p class="text-xs font-bold text-center">請將鏡頭對準攤位 iPad 的動態 QR Code</p>
     </div>
   </div>
 
@@ -168,40 +144,36 @@
   <div id="pin-modal" class="fixed inset-0 bg-neo-black/60 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4">
       <h3 class="font-black text-lg text-center uppercase border-b-4 border-neo-black pb-2">輸入 4 位數攤位救援碼</h3>
-      <p class="text-xs font-bold text-center text-slate-600">請查看攤位 iPad 螢幕角落顯示的 4 位數碼</p>
-      
-      <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 8492" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none focus:shadow-neo-sm">
-      
+      <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 1001" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none">
       <div class="flex gap-2">
-        <button onclick="closePinModal()" class="flex-1 py-3 bg-slate-200 border-4 border-neo-black font-black text-sm uppercase shadow-neo-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">取消</button>
-        <button onclick="submitPin()" class="flex-1 py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm uppercase shadow-neo-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">確認蓋印</button>
+        <button onclick="closePinModal()" class="flex-1 py-3 bg-slate-200 border-4 border-neo-black font-black text-sm uppercase">取消</button>
+        <button onclick="submitPin()" class="flex-1 py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm uppercase">確認蓋印</button>
       </div>
     </div>
   </div>
 
-  <!-- 彈窗 3：兌換小獎二次確認 Modal -->
+  <!-- 彈窗 3：兌換二選一確認 Modal -->
   <div id="redeem-confirm-modal" class="fixed inset-0 bg-neo-black/60 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4 text-center">
       <div class="inline-block bg-neo-yellow border-4 border-neo-black p-3 text-2xl font-black rotate-3">⚠️ 警示</div>
       <h3 class="font-black text-xl uppercase">確定要現在兌換小獎嗎？</h3>
       <p class="text-xs font-bold text-slate-700 leading-relaxed border-2 border-neo-black p-3 bg-neo-bg">
-        ⚠️ 特別注意：兌換「小獎」後，本系統將<span class="text-neo-red font-black">鎖定</span>，無法繼續挑戰 15 個印章的大獎！
+        ⚠️ 特集注意：兌換「小獎」後，本系統將<span class="text-neo-red font-black">鎖定</span>，無法繼續挑戰 15 個印章的大獎！
       </p>
       <div class="space-y-2 pt-2">
-        <button onclick="triggerRedeem('small')" class="w-full py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">確定兌換小獎</button>
-        <button onclick="closeRedeemConfirmModal()" class="w-full py-2.5 bg-neo-yellow border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">再想想，我去集 15 個大獎</button>
+        <button onclick="triggerRedeem('Small')" class="w-full py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase">確定兌換小獎</button>
+        <button onclick="closeRedeemConfirmModal()" class="w-full py-2.5 bg-neo-yellow border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase">再想想，我去集 15 個大獎</button>
       </div>
     </div>
   </div>
 
-  <!-- 全螢幕 Neo-brutalist 動態驗證頁面 (防偽兌換憑證) -->
+  <!-- 全螢幕動態驗證頁面 -->
   <div id="verification-screen" class="fixed inset-0 animate-neo-flash hidden z-50 flex flex-col items-center justify-between p-6 text-center text-neo-black">
     <div class="space-y-2 pt-6">
       <span class="bg-white border-4 border-neo-black font-black text-xs px-4 py-1.5 shadow-neo-md uppercase tracking-widest">學校開放日 2026 官方憑證</span>
       <h2 id="prize-title" class="text-4xl font-black uppercase tracking-tight bg-neo-yellow border-4 border-neo-black p-3 shadow-neo-lg rotate-1">已成功兌換禮物</h2>
     </div>
 
-    <!-- 即時跳動秒數核心 -->
     <div class="bg-white border-8 border-neo-black p-6 shadow-neo-xl w-full max-w-xs space-y-3 -rotate-1">
       <div class="text-xs font-black uppercase tracking-wider text-slate-500">請出示此畫面給工作人員</div>
       <div id="timer-display" class="text-6xl font-black font-mono tracking-wider bg-neo-violet border-4 border-neo-black p-2">00:00</div>
@@ -209,21 +181,76 @@
     </div>
 
     <div class="pb-6 w-full max-w-xs">
-      <button onclick="closeVerificationScreen()" class="w-full py-4 bg-white border-4 border-neo-black font-black text-base shadow-neo-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">返回主頁面</button>
+      <button onclick="closeVerificationScreen()" class="w-full py-4 bg-white border-4 border-neo-black font-black text-base shadow-neo-md uppercase">返回主頁面</button>
     </div>
   </div>
 
-  <!-- 腳本邏輯 -->
   <script>
+    const GAS_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; // 替換為你的 GAS URL
     const TOTAL_BOOTHS = 17;
+
+    let guestId = localStorage.getItem('guest_id');
+    if (!guestId) {
+      guestId = 'visitor_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('guest_id', guestId);
+    }
+
+    let userRole = localStorage.getItem('user_role') || '';
     let userStamps = JSON.parse(localStorage.getItem('user_stamps')) || [];
-    let redemptionStatus = localStorage.getItem('redemption_status') || 'none';
+    let redemptionStatus = localStorage.getItem('redemption_status') || 'None';
     let timerInterval = null;
 
     document.addEventListener('DOMContentLoaded', () => {
+      if (!userRole) {
+        document.getElementById('role-modal').classList.remove('hidden');
+      } else {
+        updateRoleBadge();
+      }
       renderBoothGrid();
       updateProgress();
+      fetchMarquee();
     });
+
+    function selectRole(role) {
+      userRole = role;
+      localStorage.setItem('user_role', role);
+      document.getElementById('role-modal').classList.add('hidden');
+      updateRoleBadge();
+      syncToBackend();
+    }
+
+    function updateRoleBadge() {
+      document.getElementById('user-role-badge').innerText = userRole || '訪客';
+    }
+
+    function syncToBackend() {
+      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+      
+      const payload = {
+        guestId: guestId,
+        role: userRole,
+        stamps: userStamps,
+        redeemedPrize: redemptionStatus
+      };
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.warn("Sync error:", err));
+    }
+
+    function fetchMarquee() {
+      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+      fetch(GAS_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.marquee) {
+            document.getElementById('marquee-text').innerText = `⚡ ${data.marquee} ⚡`;
+          }
+        }).catch(err => console.warn("Marquee fetch error:", err));
+    }
 
     function renderBoothGrid() {
       const grid = document.getElementById('booth-grid');
@@ -235,10 +262,7 @@
         card.className = `p-2.5 border-4 border-neo-black font-black text-xs flex flex-col items-center justify-center gap-1 shadow-neo-sm transition-all ${
           isStamped ? 'bg-neo-yellow text-neo-black rotate-1' : 'bg-white text-slate-400'
         }`;
-        card.innerHTML = `
-          <span class="text-base">${isStamped ? '★' : '☆'}</span>
-          <span>${boothId}</span>
-        `;
+        card.innerHTML = `<span class="text-base">${isStamped ? '★' : '☆'}</span><span>${boothId}</span>`;
         grid.appendChild(card);
       }
     }
@@ -250,15 +274,15 @@
 
       const btn = document.getElementById('btn-redeem');
 
-      if (redemptionStatus !== 'none') {
+      if (redemptionStatus !== 'None') {
         btn.disabled = true;
         btn.className = "w-full py-4 bg-slate-200 text-slate-500 font-black border-4 border-neo-black shadow-neo-sm uppercase";
-        btn.innerText = `🔒 已成功兌換 (${redemptionStatus === 'small' ? '小獎' : '大獎'})`;
+        btn.innerText = `🔒 已成功兌換 (${redemptionStatus === 'Small' ? '小獎' : '大獎'})`;
       } else if (count >= 15) {
         btn.disabled = false;
         btn.className = "w-full py-4 bg-neo-red text-white font-black border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wide cursor-pointer";
         btn.innerText = "🎁 兌換大獎 (15 印章卡解鎖)";
-        btn.onclick = () => triggerRedeem('big');
+        btn.onclick = () => triggerRedeem('Big');
       } else if (count >= 10) {
         btn.disabled = false;
         btn.className = "w-full py-4 bg-neo-yellow text-neo-black font-black border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wide cursor-pointer";
@@ -277,6 +301,7 @@
         localStorage.setItem('user_stamps', JSON.stringify(userStamps));
         renderBoothGrid();
         updateProgress();
+        syncToBackend();
         alert(`⚡ 蓋印成功！獲得 ${boothId} 印章！`);
       } else {
         alert(`💡 已收集過 ${boothId} 印章！`);
@@ -287,7 +312,6 @@
     function startScanner() {
       document.getElementById('scanner-modal').classList.remove('hidden');
       const video = document.getElementById('scanner-video');
-
       navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
         .then(stream => {
           videoStream = stream;
@@ -358,8 +382,9 @@
       redemptionStatus = type;
       localStorage.setItem('redemption_status', type);
       updateProgress();
+      syncToBackend();
 
-      document.getElementById('prize-title').innerText = type === 'big' ? '已成功兌換大獎' : '已成功兌換小獎';
+      document.getElementById('prize-title').innerText = type === 'Big' ? '已成功兌換大獎' : '已成功兌換小獎';
       document.getElementById('verification-screen').classList.remove('hidden');
 
       let seconds = 0;
