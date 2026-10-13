@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>校園開放日 2026 - 電子集章導覽平台</title>
+  <title>樂善堂楊葛小琳中學開放日 2026 - 電子集章平台</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,21 +84,31 @@
 
   <main class="max-w-md mx-auto p-4 space-y-6">
 
-    <!-- 標頭 Banner -->
-    <header class="bg-neo-violet border-4 border-neo-black p-5 shadow-neo-lg -rotate-1 relative">
-      <div id="user-role-badge" class="absolute -top-4 -right-3 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-6 shadow-neo-sm">
+    <!-- 標頭 Banner (含校徽與角色) -->
+    <header class="bg-neo-violet border-4 border-neo-black p-5 shadow-neo-lg -rotate-1 relative overflow-hidden">
+      <!-- Role 標籤 -->
+      <div id="user-role-badge" class="absolute top-2 right-2 z-10 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-3 shadow-neo-sm">
         訪客
       </div>
-      <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-neo-black">
-        校園開放日<br><span class="bg-neo-yellow px-2 border-2 border-neo-black inline-block mt-1">集章闖關</span>
-      </h1>
-      <p class="text-xs font-bold mt-2 text-neo-black/80">提示：全程使用同一瀏覽器，切勿清除快取</p>
+
+      <!-- 校徽圖片 -->
+      <img 
+        src="https://lunaticarus.github.io/classtools/logo.png" 
+        alt="校徽" 
+        class="absolute right-3 bottom-3 w-16 h-16 object-contain bg-white border-2 border-neo-black p-1 shadow-neo-sm rotate-2"
+      />
+
+      <div class="pr-16">
+        <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-neo-black">
+          楊中開放日 2026<br><span class="bg-neo-yellow px-2 border-2 border-neo-black inline-block mt-1">集章贏大獎</span>
+        </h1>
+      </div>
     </header>
 
     <!-- 集章卡主面板 -->
     <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-4">
       <div class="flex justify-between items-center border-b-4 border-neo-black pb-3">
-        <h2 class="font-black text-xl uppercase tracking-wide">我的印章卡</h2>
+        <h2 class="font-black text-xl uppercase tracking-wide">已收集印章：</h2>
         <span id="stamp-count" class="font-black text-base bg-neo-yellow border-2 border-neo-black px-3 py-1 shadow-neo-sm">
           0 / 17
         </span>
@@ -128,15 +138,15 @@
     <!-- 17 地點格子區 -->
     <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
       <div class="flex justify-between items-center border-b-2 border-neo-black pb-2">
-        <h3 class="font-black text-sm uppercase tracking-wider">17 地點導覽圖</h3>
-        <span class="text-xs font-bold bg-neo-violet border border-neo-black px-2 py-0.5">即時檢視</span>
+        <h3 class="font-black text-sm uppercase tracking-wider">我的印章卡</h3>
+        <span class="text-xs font-bold bg-neo-violet border border-neo-black px-2 py-0.5">檢視地圖</span>
       </div>
       <div id="booth-grid" class="grid grid-cols-4 gap-2 text-center"></div>
     </section>
 
     <!-- 工作坊與活動即時行程區塊 -->
     <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
-      <h3 class="font-black text-sm uppercase tracking-wider border-b-2 border-neo-black pb-2">⚡ 工作坊與活動即時時間表</h3>
+      <h3 class="font-black text-sm uppercase tracking-wider border-b-2 border-neo-black pb-2">⚡ 工作坊與活動時間表</h3>
       <div id="workshop-list" class="space-y-2.5">
         <div class="p-3 bg-neo-bg border-2 border-neo-black flex justify-between items-center shadow-neo-sm">
           <div>
@@ -427,25 +437,21 @@
       }
     }
 
-    // 重點修正：加入了 3分鐘 時間區塊比對邏輯，截圖超過 3-6 分鐘即被擋掉！
     function handleScannedData(data) {
       if (data.startsWith("booth:")) {
         const parts = data.split(":");
         const boothId = parts[1];
         
-        // 檢查是否有包含時間區塊 (格式: booth:B01:t:TimeBlock)
         if (parts.length >= 4 && parts[2] === "t") {
           const qrTimeBlock = parseInt(parts[3]);
-          const currentBlock = Math.floor(Date.now() / (1000 * 180)); // 每 180 秒 (3分鐘) 一個區塊
+          const currentBlock = Math.floor(Date.now() / (1000 * 180));
           
-          // 允許前後 ±1 個區塊容錯 (最多 3-6 分鐘寬限)
           if (Math.abs(currentBlock - qrTimeBlock) <= 1) {
             addStamp(boothId);
           } else {
             alert("⚠️ 此 QR Code 已過期！(請掃描攤位 iPad 最新顯示的動態 QR Code，切勿使用舊截圖)");
           }
         } else {
-          // 若格式無時間參數（舊版等），直接拒絕以策安全
           alert("⚠️ 無效或過期的 QR Code 格式！");
         }
       } else {
