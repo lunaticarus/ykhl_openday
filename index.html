@@ -187,7 +187,7 @@
   </div>
 
   <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec"; // 部署後替換此 URL
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec";
     const TOTAL_BOOTHS = 17;
 
     let guestId = localStorage.getItem('guest_id');
@@ -224,8 +224,9 @@
       document.getElementById('user-role-badge').innerText = userRole || '訪客';
     }
 
+    // 已修復：只有在網址未設定時才跳過，設定後會正常傳送
     function syncToBackend() {
-      if (!GAS_API_URL || GAS_API_URL.includes("https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec")) return;
+      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
       
       const payload = {
         guestId: guestId,
@@ -239,11 +240,13 @@
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(err => console.warn("Sync error:", err));
+      }).then(() => console.log("資料成功傳送至 Google Sheet"))
+        .catch(err => console.warn("Sync error:", err));
     }
 
+    // 已修復：只有在網址未設定時才跳過，設定後會正常讀取跑馬燈
     function fetchMarquee() {
-      if (!GAS_API_URL || GAS_API_URL.includes("https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec")) return;
+      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
       fetch(GAS_API_URL)
         .then(res => res.json())
         .then(data => {
@@ -367,7 +370,6 @@
     function openPinModal() { document.getElementById('pin-modal').classList.remove('hidden'); }
     function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
     
-    // 動態救援碼驗證 (支援 ±3 分鐘時間容錯)
     function submitPin() {
       const pin = parseInt(document.getElementById('pin-input').value);
       if (isNaN(pin) || pin < 1000) {
