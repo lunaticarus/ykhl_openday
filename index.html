@@ -187,7 +187,7 @@
   </div>
 
   <script>
-    const GAS_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; // 部署後替換此 URL
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec"; // 部署後替換此 URL
     const TOTAL_BOOTHS = 17;
 
     let guestId = localStorage.getItem('guest_id');
@@ -243,7 +243,7 @@
     }
 
     function fetchMarquee() {
-      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+      if (!GAS_API_URL || GAS_API_URL.includes("https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec")) return;
       fetch(GAS_API_URL)
         .then(res => res.json())
         .then(data => {
