@@ -125,7 +125,7 @@
       </button>
     </section>
 
-    <!-- 17 地點格子區 (修復名稱顯示) -->
+    <!-- 17 地點格子區 -->
     <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
       <div class="flex justify-between items-center border-b-2 border-neo-black pb-2">
         <h3 class="font-black text-sm uppercase tracking-wider">17 地點導覽圖</h3>
@@ -302,7 +302,6 @@
         }).catch(err => console.warn("Fetch error:", err));
     }
 
-    // 修正點：使用安全DOM生成，避免 ${name} 文字直接洩漏
     function renderBoothGrid() {
       const grid = document.getElementById('booth-grid');
       grid.innerHTML = '';
@@ -428,13 +427,29 @@
       }
     }
 
+    // 重點修正：加入了 3分鐘 時間區塊比對邏輯，截圖超過 3-6 分鐘即被擋掉！
     function handleScannedData(data) {
       if (data.startsWith("booth:")) {
         const parts = data.split(":");
         const boothId = parts[1];
-        addStamp(boothId);
+        
+        // 檢查是否有包含時間區塊 (格式: booth:B01:t:TimeBlock)
+        if (parts.length >= 4 && parts[2] === "t") {
+          const qrTimeBlock = parseInt(parts[3]);
+          const currentBlock = Math.floor(Date.now() / (1000 * 180)); // 每 180 秒 (3分鐘) 一個區塊
+          
+          // 允許前後 ±1 個區塊容錯 (最多 3-6 分鐘寬限)
+          if (Math.abs(currentBlock - qrTimeBlock) <= 1) {
+            addStamp(boothId);
+          } else {
+            alert("⚠️ 此 QR Code 已過期！(請掃描攤位 iPad 最新顯示的動態 QR Code，切勿使用舊截圖)");
+          }
+        } else {
+          // 若格式無時間參數（舊版等），直接拒絕以策安全
+          alert("⚠️ 無效或過期的 QR Code 格式！");
+        }
       } else {
-        alert("無效的 QR Code！");
+        alert("⚠️ 無效的 QR Code！");
       }
     }
 
