@@ -194,7 +194,7 @@
     <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4">
       <h3 class="font-black text-lg text-center uppercase border-b-4 border-neo-black pb-2">輸入 4 位數印章動態碼</h3>
       <p class="text-xs font-bold text-center text-slate-600">請向攤位服務生領取印章動態碼</p>
-      <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 1013" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none">
+      <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 8429" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none">
       <div class="flex gap-2">
         <button onclick="closePinModal()" class="flex-1 py-3 bg-slate-200 border-4 border-neo-black font-black text-sm uppercase">取消</button>
         <button onclick="submitPin()" class="flex-1 py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm uppercase">確認蓋印</button>
@@ -463,6 +463,14 @@
     function openPinModal() { document.getElementById('pin-modal').classList.remove('hidden'); }
     function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
     
+    // 隨機 Hash 演算法生成 4 位數 Pin 碼 (與 iPad 端一致)
+    function generateDynamicPin(boothNum, timeBlock) {
+      const SALT = 20261013;
+      let hash = (boothNum * 9301 + timeBlock * 49297 + SALT) % 233280;
+      hash = (hash * 9301 + 49297) % 233280;
+      return 1000 + (Math.abs(hash) % 9000);
+    }
+
     function submitPin() {
       const pin = parseInt(document.getElementById('pin-input').value);
       if (isNaN(pin) || pin < 1000) {
@@ -476,7 +484,7 @@
       for (let i = 1; i <= TOTAL_BOOTHS; i++) {
         for (let offset = -1; offset <= 1; offset++) {
           const targetBlock = currentBlock + offset;
-          const validCode = 1000 + (i * 10) + (targetBlock % 10);
+          const validCode = generateDynamicPin(i, targetBlock);
           if (pin === validCode) {
             matchedBooth = 'B' + i.toString().padStart(2, '0');
             break;
