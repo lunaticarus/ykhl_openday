@@ -36,6 +36,16 @@
   </script>
 
   <style>
+    /* 補上跑馬燈平滑滾動動畫 */
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-marquee {
+      display: inline-block;
+      animation: marquee 15s linear infinite;
+    }
+
     body {
       background-color: #FFFDF5;
       background-image: radial-gradient(#000000 1.5px, transparent 1.5px);
@@ -224,7 +234,6 @@
       document.getElementById('user-role-badge').innerText = userRole || '訪客';
     }
 
-    // 已修復：只有在網址未設定時才跳過，設定後會正常傳送
     function syncToBackend() {
       if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
       
@@ -240,11 +249,10 @@
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).then(() => console.log("資料成功傳送至 Google Sheet"))
+      }).then(() => console.log("資料同步成功"))
         .catch(err => console.warn("Sync error:", err));
     }
 
-    // 已修復：只有在網址未設定時才跳過，設定後會正常讀取跑馬燈
     function fetchMarquee() {
       if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
       fetch(GAS_API_URL)
