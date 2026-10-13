@@ -36,17 +36,25 @@
   </script>
 
   <style>
-    /* 修正版：無縫無限 Loop CSS (-50% 位移) */
-    @keyframes marquee-seamless {
+    /* 修正版：防裁切 + GPU 硬體加速無縫跑馬燈 */
+    @keyframes marquee-smooth {
       0% { transform: translate3d(0, 0, 0); }
       100% { transform: translate3d(-50%, 0, 0); }
     }
 
-    .marquee-track {
+    .marquee-container {
       display: flex;
       width: max-content;
       will-change: transform;
-      animation: marquee-seamless 25s linear infinite;
+      transform: translateZ(0); /* 啟用 GPU 加速，防邊界鋸齒與字元裁切 */
+      animation: marquee-smooth 22s linear infinite;
+    }
+
+    .marquee-content {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      padding-right: 3rem; /* 預留足夠的間距，防止首尾相連時被截斷 */
     }
 
     body {
@@ -63,13 +71,14 @@
 </head>
 <body class="text-neo-black font-sans pb-24 selection:bg-neo-yellow">
 
-  <!-- 頂部無縫置頂跑馬燈 -->
-  <div class="sticky top-0 z-40 bg-neo-yellow border-b-4 border-neo-black py-2.5 overflow-hidden whitespace-nowrap shadow-neo-sm">
-    <div class="marquee-track">
-      <div class="marquee-content font-black text-sm tracking-wide uppercase px-4 flex-none">
+  <!-- 頂部防裁切置頂跑馬燈 -->
+  <div class="sticky top-0 z-40 bg-neo-yellow border-b-4 border-neo-black py-2.5 overflow-hidden shadow-neo-sm">
+    <div class="marquee-container">
+      <div class="marquee-content font-black text-sm tracking-wide uppercase">
         ⚡ 歡迎光臨學校開放日 2026！集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡
       </div>
-      <div class="marquee-content font-black text-sm tracking-wide uppercase px-4 flex-none" aria-hidden="true">
+      <!-- 第二組完全相同的文字內容，確保滾動無縫銜接 -->
+      <div class="marquee-content font-black text-sm tracking-wide uppercase" aria-hidden="true">
         ⚡ 歡迎光臨學校開放日 2026！集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡
       </div>
     </div>
