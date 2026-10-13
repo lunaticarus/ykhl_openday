@@ -1,278 +1,382 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>開放日集章與資訊平台</title>
+  <title>校園開放日 2026 - 電子集章導覽平台</title>
   
-  <!-- 引入 QR Code 生成與 HTML5 相機掃描 Libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- 載入 Neo-brutality 指定 Google 字型：Space Grotesk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jsQR 掃描解碼庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <script>
+    // 配置 Neo-brutalism 設計 Token 到 Tailwind
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            'neo-bg': '#FFFDF5',        // Cream Background
+            'neo-black': '#000000',     // Ink Black
+            'neo-red': '#FF6B6B',       // Hot Red
+            'neo-yellow': '#FFD93D',    // Vivid Yellow
+            'neo-violet': '#C4B5FD',    // Soft Violet
+          },
+          boxShadow: {
+            'neo-sm': '4px 4px 0px 0px #000000',
+            'neo-md': '6px 6px 0px 0px #000000',
+            'neo-lg': '8px 8px 0px 0px #000000',
+            'neo-xl': '12px 12px 0px 0px #000000',
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
-    
-    /* 頂部即時公告跑馬燈 */
-    .marquee { background: #ff9800; color: #fff; padding: 10px 15px; font-weight: bold; overflow: hidden; white-space: nowrap; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .marquee-content { display: inline-block; animation: marquee 15s linear infinite; }
-    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    /* Neo-brutalism 網點背景 (Halftone Dots) */
+    body {
+      background-color: #FFFDF5;
+      background-image: radial-gradient(#000000 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
 
-    .container { padding: 15px; max-width: 480px; margin: 0 auto; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 15px; text-align: center; }
-    
-    /* 印章網格設計 */
-    .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
-    .stamp-box { aspect-ratio: 1; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #aaa; font-size: 14px; position: relative; background: #fafafa; }
-    .stamp-box.active { border: 2px solid #4caf50; background-color: #e8f5e9; color: #4caf50; font-size: 18px; }
-    .stamp-box.special { border-color: #ff9800; background-color: #fff8e1; }
-    .stamp-box.special::after { content: '🎁'; font-size: 10px; position: absolute; top: 2px; right: 2px; }
-
-    /* 通用元件 */
-    .btn { background: #2196f3; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-    .btn:active { background: #1976d2; }
-    .btn-secondary { background: #666; }
-    select, input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; outline: none; }
-    #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-    
-    /* Loading 指示器 */
-    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; color: white; font-size: 18px; flex-direction: column; }
-    .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid white; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* 閃爍防偽背景 */
+    @keyframes neo-flash {
+      0%, 100% { background-color: #FF6B6B; }
+      50% { background-color: #FFD93D; }
+    }
+    .animate-neo-flash {
+      animation: neo-flash 1.5s infinite steps(1);
+    }
   </style>
 </head>
-<body>
+<body class="text-neo-black font-sans pb-24 selection:bg-neo-yellow">
 
-<!-- 全局 Loading 畫面 -->
-<div class="loading-overlay" id="loading">
-  <div class="spinner"></div>
-  <div id="loadingText">處理中，請稍候...</div>
-</div>
-
-<!-- 即時跑馬燈公告 -->
-<div class="marquee">
-  <div class="marquee-content" id="marqueeText">歡迎來到開放日！集滿 10 個印章可換領階段一禮物！</div>
-</div>
-
-<div class="container">
-  
-  <!-- 1. 首次進入選取身分 卡片 -->
-  <div id="roleSelectCard" class="card">
-    <h2 style="margin-top:0; color:#2196f3;">歡迎光臨開放日</h2>
-    <p style="color:#666; font-size:14px;">請選擇您的身分以開啟數位集章卡：</p>
-    <select id="roleSelect">
-      <option value="本校學生">本校學生</option>
-      <option value="本校家長">本校家長</option>
-      <option value="小學學生">小學學生</option>
-      <option value="小學家長">小學家長</option>
-      <option value="其他來賓">其他來賓</option>
-    </select>
-    <button class="btn" onclick="registerRole()">開始體驗集章</button>
-  </div>
-
-  <!-- 2. 來賓主要介面 (QR Code + 集章卡) -->
-  <div id="guestMainCard" class="card" style="display:none;">
-    <h3 style="margin-top:0;">專屬蓋印 QR Code</h3>
-    <p style="color:#666; font-size:12px; margin-bottom:5px;">請向攤位工作人員出示（每 15 秒自動防偽刷新）</p>
-    <div id="qrcode"></div>
-    <p style="font-size:14px; color:#555; margin:5px 0;">來賓編號：<strong id="displayGuestID" style="color:#2196f3;">---</strong></p>
-    
-    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-    
-    <h3 style="margin-bottom:5px;">數位印章卡 (<span id="stampCount" style="color:#2196f3;">0</span>/20)</h3>
-    <div class="stamp-grid" id="stampGrid"></div>
-    
-    <div style="margin-top:15px; text-align:left; font-size: 13px; background:#f9f9f9; padding:10px; border-radius:8px;">
-      <p style="margin:4px 0;">🎁 階段一禮物 (10印)：<strong id="statusStage1">未達標</strong></p>
-      <p style="margin:4px 0;">🎁 階段二禮物 (20印)：<strong id="statusStage2">未達標</strong></p>
+  <!-- 頂部跑馬燈 (Neo-brutalism 撞色風) -->
+  <div class="bg-neo-yellow border-b-4 border-neo-black py-2.5 px-4 overflow-hidden whitespace-nowrap shadow-neo-sm">
+    <div class="inline-block animate-marquee font-black text-sm tracking-wide uppercase">
+      ⚡ 歡迎來到學校開放日 2026！ ⚡ 集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡ 請勿更換瀏覽器以防紀錄遺失！ ⚡
     </div>
   </div>
 
-  <!-- 3. 工作人員切換連結 -->
-  <div style="text-align: center; margin-top: 20px;">
-    <button style="background:none; border:none; color:#888; text-decoration:underline; font-size:13px; cursor:pointer;" onclick="toggleStaffMode()">切換至工作人員/兌換處模式</button>
+  <!-- 主內容容器 -->
+  <main class="max-w-md mx-auto p-4 space-y-6">
+
+    <!-- 標頭 Banner (貼紙傾斜效果) -->
+    <header class="bg-neo-violet border-4 border-neo-black p-5 shadow-neo-lg -rotate-1 relative">
+      <div class="absolute -top-4 -right-3 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-6 shadow-neo-sm">
+        LIVE 2026
+      </div>
+      <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-neo-black">
+        校園開放日<br><span class="bg-neo-yellow px-2 border-2 border-neo-black inline-block mt-1">集章闖關</span>
+      </h1>
+      <p class="text-xs font-bold mt-2 text-neo-black/80">提示：全程使用同一瀏覽器，切勿清除快取</p>
+    </header>
+
+    <!-- 集章卡主面板 -->
+    <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-4">
+      <div class="flex justify-between items-center border-b-4 border-neo-black pb-3">
+        <h2 class="font-black text-xl uppercase tracking-wide">我的印章卡</h2>
+        <span id="stamp-count" class="font-black text-base bg-neo-yellow border-2 border-neo-black px-3 py-1 shadow-neo-sm">
+          0 / 17
+        </span>
+      </div>
+
+      <!-- 進度條 -->
+      <div class="w-full bg-slate-100 border-4 border-neo-black h-7 relative overflow-hidden">
+        <div id="progress-bar" class="bg-neo-red h-full w-0 border-r-4 border-neo-black transition-all duration-300"></div>
+      </div>
+
+      <!-- 獎項兌換按鈕 -->
+      <div id="reward-action-area" class="pt-2">
+        <button id="btn-redeem" onclick="openRedeemModal()" class="w-full py-4 bg-slate-200 text-slate-400 font-black border-4 border-neo-black shadow-neo-sm uppercase tracking-wide cursor-not-allowed" disabled>
+          🔒 未達門檻 (需至少 10 印章)
+        </button>
+      </div>
+    </section>
+
+    <!-- 掃描與輸入按鈕組 (機械式壓下動效) -->
+    <section class="grid grid-cols-5 gap-3">
+      <button onclick="startScanner()" class="col-span-3 py-4 bg-neo-red hover:bg-neo-red/90 text-white font-black text-lg border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2 uppercase tracking-wide">
+        📷 開啟鏡頭掃碼
+      </button>
+      <button onclick="openPinModal()" class="col-span-2 py-4 bg-neo-yellow hover:bg-neo-yellow/90 text-neo-black font-black text-base border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all uppercase tracking-wide">
+        🔢 手動碼
+      </button>
+    </section>
+
+    <!-- 17 個地點 Stamp 格子區 -->
+    <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
+      <div class="flex justify-between items-center border-b-2 border-neo-black pb-2">
+        <h3 class="font-black text-sm uppercase tracking-wider">17 地點導覽圖</h3>
+        <span class="text-xs font-bold bg-neo-violet border border-neo-black px-2 py-0.5">點擊即時檢視</span>
+      </div>
+      
+      <div id="booth-grid" class="grid grid-cols-4 gap-2 text-center">
+        <!-- 由 JavaScript 動態繪製 17 個 Neo-brutalist 貼紙格子 -->
+      </div>
+    </section>
+
+    <!-- 工作坊行程 -->
+    <section class="bg-white border-4 border-neo-black p-5 shadow-neo-lg space-y-3">
+      <h3 class="font-black text-sm uppercase tracking-wider border-b-2 border-neo-black pb-2">⚡ 工作坊即時行程</h3>
+      <div class="space-y-2.5">
+        <div class="p-3 bg-neo-bg border-2 border-neo-black flex justify-between items-center shadow-neo-sm">
+          <div>
+            <div class="font-black text-sm">VR 虛擬實境體驗</div>
+            <div class="text-xs font-bold text-slate-600">地點：3F 電腦室</div>
+          </div>
+          <span class="bg-neo-yellow border border-neo-black font-black text-xs px-2 py-1">14:00 - 14:30</span>
+        </div>
+        <div class="p-3 bg-neo-bg border-2 border-neo-black flex justify-between items-center shadow-neo-sm">
+          <div>
+            <div class="font-black text-sm">科學驚奇小實驗</div>
+            <div class="text-xs font-bold text-slate-600">地點：2F 綜合實驗室</div>
+          </div>
+          <span class="bg-neo-violet border border-neo-black font-black text-xs px-2 py-1">14:30 - 15:00</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 彈窗 1：相機掃描 Modal -->
+  <div id="scanner-modal" class="fixed inset-0 bg-neo-black/80 hidden z-50 flex flex-col items-center justify-center p-4">
+    <div class="relative w-full max-w-sm bg-white border-4 border-neo-black shadow-neo-xl p-4 space-y-4">
+      <div class="flex justify-between items-center border-b-4 border-neo-black pb-2">
+        <h3 class="font-black text-base uppercase">相機掃描器</h3>
+        <button onclick="stopScanner()" class="font-black text-sm bg-neo-red text-white border-2 border-neo-black px-2 py-0.5">✕ 關閉</button>
+      </div>
+      <div class="border-4 border-neo-black overflow-hidden relative bg-black">
+        <video id="scanner-video" class="w-full h-64 object-cover" playsinline></video>
+        <canvas id="scanner-canvas" class="hidden"></canvas>
+      </div>
+      <p class="text-xs font-bold text-center">請將鏡頭對準攤位 iPad 的動態 QR Code</p>
+    </div>
   </div>
 
-  <!-- 4. 工作人員/兌換處掃描介面 -->
-  <div id="staffCard" class="card" style="display:none;">
-    <h3 style="margin-top:0;">工作人員掃描系統</h3>
-    <input type="text" id="boothIDInput" placeholder="攤位 ID (如 B01，兌換處填 GIFT)">
-    <input type="password" id="pinInput" placeholder="請輸入 PIN 密碼">
-    
-    <div id="reader" style="width:100%; border-radius:8px; overflow:hidden; margin-bottom:10px;"></div>
-    
-    <button class="btn btn-secondary" onclick="toggleStaffMode()">返回來賓模式</button>
+  <!-- 彈窗 2：手動 4 位數救援碼 Modal -->
+  <div id="pin-modal" class="fixed inset-0 bg-neo-black/60 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4">
+      <h3 class="font-black text-lg text-center uppercase border-b-4 border-neo-black pb-2">輸入 4 位數攤位救援碼</h3>
+      <p class="text-xs font-bold text-center text-slate-600">請查看攤位 iPad 螢幕角落顯示的 4 位數碼</p>
+      
+      <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 8492" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none focus:shadow-neo-sm">
+      
+      <div class="flex gap-2">
+        <button onclick="closePinModal()" class="flex-1 py-3 bg-slate-200 border-4 border-neo-black font-black text-sm uppercase shadow-neo-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">取消</button>
+        <button onclick="submitPin()" class="flex-1 py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm uppercase shadow-neo-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">確認蓋印</button>
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- 彈窗 3：兌換小獎二次確認 Modal -->
+  <div id="redeem-confirm-modal" class="fixed inset-0 bg-neo-black/60 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4 text-center">
+      <div class="inline-block bg-neo-yellow border-4 border-neo-black p-3 text-2xl font-black rotate-3">⚠️ 警示</div>
+      <h3 class="font-black text-xl uppercase">確定要現在兌換小獎嗎？</h3>
+      <p class="text-xs font-bold text-slate-700 leading-relaxed border-2 border-neo-black p-3 bg-neo-bg">
+        ⚠️ 特別注意：兌換「小獎」後，本系統將<span class="text-neo-red font-black">鎖定</span>，無法繼續挑戰 15 個印章的大獎！
+      </p>
+      <div class="space-y-2 pt-2">
+        <button onclick="triggerRedeem('small')" class="w-full py-3 bg-neo-red text-white border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">確定兌換小獎</button>
+        <button onclick="closeRedeemConfirmModal()" class="w-full py-2.5 bg-neo-yellow border-4 border-neo-black font-black text-sm shadow-neo-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">再想想，我去集 15 個大獎</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  // ⚠️ 請務必將此處替換為你實際部署的 Google Apps Script Web App URL
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx_YOUR_DEPLOYMENT_ID_xxxxxxx/exec";
+  <!-- 全螢幕 Neo-brutalist 動態驗證頁面 (防偽兌換憑證) -->
+  <div id="verification-screen" class="fixed inset-0 animate-neo-flash hidden z-50 flex flex-col items-center justify-between p-6 text-center text-neo-black">
+    <div class="space-y-2 pt-6">
+      <span class="bg-white border-4 border-neo-black font-black text-xs px-4 py-1.5 shadow-neo-md uppercase tracking-widest">學校開放日 2026 官方憑證</span>
+      <h2 id="prize-title" class="text-4xl font-black uppercase tracking-tight bg-neo-yellow border-4 border-neo-black p-3 shadow-neo-lg rotate-1">已成功兌換禮物</h2>
+    </div>
 
-  let guestID = localStorage.getItem('openDay_guestID');
-  let qrCodeObj = null;
-  let html5QrcodeScanner = null;
+    <!-- 即時跳動秒數核心 -->
+    <div class="bg-white border-8 border-neo-black p-6 shadow-neo-xl w-full max-w-xs space-y-3 -rotate-1">
+      <div class="text-xs font-black uppercase tracking-wider text-slate-500">請出示此畫面給工作人員</div>
+      <div id="timer-display" class="text-6xl font-black font-mono tracking-wider bg-neo-violet border-4 border-neo-black p-2">00:00</div>
+      <div class="text-xs font-black bg-neo-yellow border-2 border-neo-black py-1">⚡ 即時動態跳動秒數 (防截圖)</div>
+    </div>
 
-  window.onload = function() {
-    fetchAnnouncement();
-    if (guestID) {
-      document.getElementById('roleSelectCard').style.display = 'none';
-      document.getElementById('guestMainCard').style.display = 'block';
-      document.getElementById('displayGuestID').innerText = guestID;
-      startDynamicQR();
-      refreshGuestStatus();
-    }
-  };
+    <div class="pb-6 w-full max-w-xs">
+      <button onclick="closeVerificationScreen()" class="w-full py-4 bg-white border-4 border-neo-black font-black text-base shadow-neo-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">返回主頁面</button>
+    </div>
+  </div>
 
-// 修正後的 API 請求函數 (解決 Safari CORS/TypeError: Load failed)
-  function apiPost(payload, callback) {
-    showLoading(true);
-    
-    // 使用 URLSearchParams 格式發送，避開 Safari 預檢鎖定
-    fetch(GAS_API_URL, {
-      method: 'POST',
-      redirect: 'follow', // 關鍵：跟隨 GAS 的 302 重定向
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8' // 必須使用 text/plain 以通過 CORS 預檢
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => {
-      if (!res.ok) throw new Error('網絡回應不正常');
-      return res.json();
-    })
-    .then(data => {
-      showLoading(false);
-      callback(data);
-    })
-    .catch(err => {
-      showLoading(false);
-      console.error(err);
-      alert('連線失敗，請檢查網址或網絡：\n' + err);
+  <!-- 腳本邏輯 -->
+  <script>
+    const TOTAL_BOOTHS = 17;
+    let userStamps = JSON.parse(localStorage.getItem('user_stamps')) || [];
+    let redemptionStatus = localStorage.getItem('redemption_status') || 'none';
+    let timerInterval = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderBoothGrid();
+      updateProgress();
     });
-  }
 
-  function showLoading(enable, text = "處理中，請稍候...") {
-    document.getElementById('loadingText').innerText = text;
-    document.getElementById('loading').style.display = enable ? 'flex' : 'none';
-  }
+    function renderBoothGrid() {
+      const grid = document.getElementById('booth-grid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= TOTAL_BOOTHS; i++) {
+        const boothId = `B${i.toString().padStart(2, '0')}`;
+        const isStamped = userStamps.includes(boothId);
+        const card = document.createElement('div');
+        card.className = `p-2.5 border-4 border-neo-black font-black text-xs flex flex-col items-center justify-center gap-1 shadow-neo-sm transition-all ${
+          isStamped ? 'bg-neo-yellow text-neo-black rotate-1' : 'bg-white text-slate-400'
+        }`;
+        card.innerHTML = `
+          <span class="text-base">${isStamped ? '★' : '☆'}</span>
+          <span>${boothId}</span>
+        `;
+        grid.appendChild(card);
+      }
+    }
 
-  // 1. 來賓登記身分
-  function registerRole() {
-    const role = document.getElementById('roleSelect').value;
-    apiPost({ action: 'registerGuest', role: role }, function(res) {
-      if (res.status === 'success') {
-        guestID = res.guestID;
-        localStorage.setItem('openDay_guestID', guestID);
-        location.reload();
+    function updateProgress() {
+      const count = userStamps.length;
+      document.getElementById('stamp-count').innerText = `${count} / ${TOTAL_BOOTHS}`;
+      document.getElementById('progress-bar').style.width = `${(count / TOTAL_BOOTHS) * 100}%`;
+
+      const btn = document.getElementById('btn-redeem');
+
+      if (redemptionStatus !== 'none') {
+        btn.disabled = true;
+        btn.className = "w-full py-4 bg-slate-200 text-slate-500 font-black border-4 border-neo-black shadow-neo-sm uppercase";
+        btn.innerText = `🔒 已成功兌換 (${redemptionStatus === 'small' ? '小獎' : '大獎'})`;
+      } else if (count >= 15) {
+        btn.disabled = false;
+        btn.className = "w-full py-4 bg-neo-red text-white font-black border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wide cursor-pointer";
+        btn.innerText = "🎁 兌換大獎 (15 印章卡解鎖)";
+        btn.onclick = () => triggerRedeem('big');
+      } else if (count >= 10) {
+        btn.disabled = false;
+        btn.className = "w-full py-4 bg-neo-yellow text-neo-black font-black border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wide cursor-pointer";
+        btn.innerText = "🎁 兌換小獎 (或繼續集大獎)";
+        btn.onclick = () => document.getElementById('redeem-confirm-modal').classList.remove('hidden');
       } else {
-        alert(res.message);
+        btn.disabled = true;
+        btn.className = "w-full py-4 bg-slate-200 text-slate-400 font-black border-4 border-neo-black shadow-neo-sm uppercase cursor-not-allowed";
+        btn.innerText = `🔒 未達門檻 (還差 ${10 - count} 個換小獎)`;
       }
-    });
-  }
-
-  // 2. 動態 QR Code 生成 (防止截圖防偽)
-  function startDynamicQR() {
-    qrCodeObj = new QRCode(document.getElementById("qrcode"), { width: 160, height: 160 });
-    updateQR();
-    setInterval(updateQR, 15000); // 每 15 秒更新一次戳記
-  }
-
-  function updateQR() {
-    if (!guestID) return;
-    const timestamp = Math.floor(Date.now() / 1000);
-    const payload = `${guestID}|${timestamp}`;
-    qrCodeObj.clear();
-    qrCodeObj.makeCode(payload);
-  }
-
-  // 3. 渲染 20 格印章介面
-  function renderStamps(count, stage1, stage2) {
-    document.getElementById('stampCount').innerText = count;
-    document.getElementById('statusStage1').innerText = stage1 ? "已領取 ✅" : (count >= 10 ? "可兌換 🎁" : "未達標");
-    document.getElementById('statusStage2').innerText = stage2 ? "已領取 ✅" : (count >= 20 ? "可兌換 🎁" : "未達標");
-
-    const grid = document.getElementById('stampGrid');
-    grid.innerHTML = '';
-    for (let i = 1; i <= 20; i++) {
-      const box = document.createElement('div');
-      box.className = `stamp-box ${i <= count ? 'active' : ''} ${(i===10||i===20) ? 'special' : ''}`;
-      box.innerText = i <= count ? '✓' : i;
-      grid.appendChild(box);
     }
-  }
 
-  function refreshGuestStatus() {
-    apiPost({ action: 'getGuestStatus', guestID: guestID }, function(res) {
-      if (res.status === 'success') {
-        renderStamps(res.guest.stamps, res.guest.stage1, res.guest.stage2);
+    function addStamp(boothId) {
+      if (!userStamps.includes(boothId)) {
+        userStamps.push(boothId);
+        localStorage.setItem('user_stamps', JSON.stringify(userStamps));
+        renderBoothGrid();
+        updateProgress();
+        alert(`⚡ 蓋印成功！獲得 ${boothId} 印章！`);
+      } else {
+        alert(`💡 已收集過 ${boothId} 印章！`);
       }
-    });
-  }
+    }
 
-  function fetchAnnouncement() {
-    apiPost({ action: 'getAnnouncement' }, function(res) {
-      if (res.status === 'success' && res.message) {
-        document.getElementById('marqueeText').innerText = res.message;
-      }
-    });
-  }
+    let videoStream = null;
+    function startScanner() {
+      document.getElementById('scanner-modal').classList.remove('hidden');
+      const video = document.getElementById('scanner-video');
 
-  // 4. 工作人員切換與相機掃描控制 (完整支援 iPad Safari)
-  function toggleStaffMode() {
-    const staffCard = document.getElementById('staffCard');
-    if (staffCard.style.display === 'none') {
-      staffCard.style.display = 'block';
-      document.getElementById('guestMainCard').style.display = 'none';
-      document.getElementById('roleSelectCard').style.display = 'none';
-      
-      // 初始化 html5Qrcode 相機鏡頭
-      if (!html5QrcodeScanner) {
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-          fps: 10, 
-          qrbox: { width: 220, height: 220 },
-          rememberLastUsedCamera: true
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+          videoStream = stream;
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true);
+          video.play();
+          requestAnimationFrame(scanQRCode);
+        })
+        .catch(() => {
+          alert("無法打開相機，請使用「手動碼」。");
+          stopScanner();
         });
+    }
+
+    function stopScanner() {
+      if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+      document.getElementById('scanner-modal').classList.add('hidden');
+    }
+
+    function scanQRCode() {
+      const video = document.getElementById('scanner-video');
+      const canvas = document.getElementById('scanner-canvas');
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+          stopScanner();
+          handleScannedData(code.data);
+          return;
+        }
       }
-      html5QrcodeScanner.render(onScanSuccess);
-    } else {
-      staffCard.style.display = 'none';
-      if (guestID) document.getElementById('guestMainCard').style.display = 'block';
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
+      if (!document.getElementById('scanner-modal').classList.contains('hidden')) {
+        requestAnimationFrame(scanQRCode);
       }
     }
-  }
 
-  // 掃描成功後的處理邏輯
-  function onScanSuccess(decodedText) {
-    const boothID = document.getElementById('boothIDInput').value.trim();
-    const pinCode = document.getElementById('pinInput').value.trim();
-
-    if (!boothID || !pinCode) {
-      alert('請先輸入攤位 ID 與 PIN 密碼！');
-      return;
+    function handleScannedData(data) {
+      if (data.startsWith("booth:")) {
+        addStamp(data.split(":")[1]);
+      } else {
+        alert("無效的 QR Code！");
+      }
     }
 
-    // 暫停掃描以免重複觸發
-    html5QrcodeScanner.pause();
-
-    if (boothID.toUpperCase() === 'GIFT') {
-      const isStage1 = confirm('按「確定」兌換【階段一 (10印)】禮物\n按「取消」兌換【階段二 (20印)】禮物');
-      const stage = isStage1 ? 1 : 2;
-      
-      apiPost({ action: 'redeemGift', boothID: boothID, pinCode: pinCode, qrPayload: decodedText, stage: stage }, function(res) {
-        alert(res.message);
-        html5QrcodeScanner.resume();
-      });
-    } else {
-      apiPost({ action: 'addStamp', boothID: boothID, pinCode: pinCode, qrPayload: decodedText }, function(res) {
-        alert(res.message);
-        html5QrcodeScanner.resume();
-      });
+    function openPinModal() { document.getElementById('pin-modal').classList.remove('hidden'); }
+    function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
+    function submitPin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin.length === 4) {
+        const num = parseInt(pin);
+        if (num >= 1001 && num <= 1017) {
+          addStamp(`B${(num - 1000).toString().padStart(2, '0')}`);
+          closePinModal();
+          document.getElementById('pin-input').value = '';
+        } else {
+          alert("無效的救援碼！");
+        }
+      }
     }
-  }
-</script>
+
+    function triggerRedeem(type) {
+      closeRedeemConfirmModal();
+      redemptionStatus = type;
+      localStorage.setItem('redemption_status', type);
+      updateProgress();
+
+      document.getElementById('prize-title').innerText = type === 'big' ? '已成功兌換大獎' : '已成功兌換小獎';
+      document.getElementById('verification-screen').classList.remove('hidden');
+
+      let seconds = 0;
+      const timerDisplay = document.getElementById('timer-display');
+      timerInterval = setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        timerDisplay.innerText = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function closeRedeemConfirmModal() { document.getElementById('redeem-confirm-modal').classList.add('hidden'); }
+    function closeVerificationScreen() {
+      clearInterval(timerInterval);
+      document.getElementById('verification-screen').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
