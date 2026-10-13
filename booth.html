@@ -5,23 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>攤位動態 QR Code 顯示器 - 學校開放日 2026</title>
   
-  <!-- 載入 Google 字型：Space Grotesk -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- qrcodejs 產生器函式庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Space Grotesk', 'sans-serif'],
-          },
+          fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
           colors: {
             'neo-bg': '#FFFDF5',
             'neo-black': '#000000',
@@ -51,17 +46,14 @@
 </head>
 <body class="text-neo-black font-sans min-h-screen flex flex-col justify-between p-6 select-none selection:bg-neo-yellow">
 
-  <!-- 頂部列：攤位切換與狀態指示 -->
+  <!-- 頂部列 -->
   <header class="flex justify-between items-center max-w-4xl mx-auto w-full">
-    <!-- 攤位切換選單 -->
     <div class="flex items-center gap-3">
       <span class="font-black text-sm uppercase bg-neo-black text-white px-3 py-1.5 border-2 border-neo-black shadow-neo-sm">選擇攤位</span>
-      <select id="booth-select" onchange="changeBooth()" class="font-black text-xl bg-neo-yellow border-4 border-neo-black p-2 shadow-neo-sm focus:outline-none focus:ring-0 cursor-pointer">
-        <!-- B01 到 B17 自動生成 -->
+      <select id="booth-select" onchange="changeBooth()" class="font-black text-xl bg-neo-yellow border-4 border-neo-black p-2 shadow-neo-sm focus:outline-none cursor-pointer">
       </select>
     </div>
 
-    <!-- 即時連線與倒數狀態 -->
     <div class="flex items-center gap-3">
       <div class="bg-white border-4 border-neo-black px-4 py-2 shadow-neo-sm font-black text-sm flex items-center gap-2">
         <span class="w-3 h-3 bg-emerald-500 rounded-full border-2 border-neo-black animate-ping"></span>
@@ -70,61 +62,53 @@
     </div>
   </header>
 
-  <!-- 主內容：超大動態 QR Code 展示卡片 -->
+  <!-- 主內容區 -->
   <main class="max-w-2xl mx-auto w-full my-auto py-8">
     <div class="bg-white border-8 border-neo-black p-8 shadow-neo-2xl text-center space-y-6 relative -rotate-1">
       
-      <!-- 頂部貼紙 Badge -->
       <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-neo-red border-4 border-neo-black px-6 py-1.5 font-black text-lg text-white uppercase tracking-widest rotate-2 shadow-neo-md">
         請用手機開啟 WEB APP 掃描蓋印
       </div>
 
-      <!-- 攤位名稱顯示 -->
       <div class="pt-4 space-y-1">
         <h1 id="booth-title" class="text-5xl font-black uppercase tracking-tight">攤位 B01</h1>
         <p class="text-sm font-bold text-slate-600">請將手機鏡頭對準下方動態 QR Code</p>
       </div>
 
-      <!-- QR Code 容器 -->
       <div class="flex justify-center my-6">
-        <div class="p-4 bg-neo-yellow border-8 border-neo-black shadow-neo-lg inline-block relative group">
+        <div class="p-4 bg-neo-yellow border-8 border-neo-black shadow-neo-lg inline-block relative">
           <div id="qrcode" class="bg-white p-4 border-4 border-neo-black"></div>
         </div>
       </div>
 
-      <!-- 下方注意事項 -->
       <div class="bg-neo-bg border-4 border-neo-black p-4 text-xs font-bold space-y-1 text-slate-700">
-        <p>⚡ 本 QR Code 每 3 分鐘自動更換一次，防止截圖與遠端轉傳刷卡</p>
-        <p>⚡ 時間戳容錯範圍為 ±3 分鐘，確保現場網路與時間誤差不影響體驗</p>
+        <p>⚡ 本 QR Code 與救援碼每 3 分鐘自動更新，防範遠端轉傳刷卡</p>
+        <p>⚡ 時間容錯機制已啟用，確保連線穩定無誤</p>
       </div>
 
     </div>
   </main>
 
-  <!-- 頁尾：角落動態 4 位數救援碼與當前系統時間 -->
+  <!-- 頁尾 -->
   <footer class="max-w-4xl mx-auto w-full flex justify-between items-end">
-    
-    <!-- 緊急救援碼貼紙 -->
     <div class="bg-neo-violet border-4 border-neo-black p-4 shadow-neo-lg rotate-2 max-w-xs">
-      <div class="font-black text-xs uppercase tracking-wider text-slate-800">相機無法開啟？救援碼：</div>
+      <div class="font-black text-xs uppercase tracking-wider text-slate-800">相機無法開啟？動態救援碼：</div>
       <div id="rescue-code" class="text-4xl font-black font-mono tracking-widest text-neo-black bg-white border-2 border-neo-black px-3 py-1 my-1 text-center">
-        1001
+        1010
       </div>
       <div class="text-[10px] font-black text-slate-600">請在手機「手動碼」輸入上方 4 位數字</div>
     </div>
 
-    <!-- 當前系統時間 -->
     <div class="bg-white border-4 border-neo-black px-5 py-3 shadow-neo-md text-right font-black">
       <div class="text-xs text-slate-500 uppercase tracking-wider">系統目前時間</div>
       <div id="clock-display" class="text-2xl font-mono">14:30:00</div>
     </div>
-
   </footer>
 
   <script>
     let currentBooth = "B01";
     let qrcodeInstance = null;
-    let countdownSeconds = 180; // 3 分鐘 (180 秒)
+    let countdownSeconds = 180;
 
     document.addEventListener('DOMContentLoaded', () => {
       initBoothSelect();
@@ -132,7 +116,6 @@
       startTimers();
     });
 
-    // 初始化 17 個攤位下拉選單
     function initBoothSelect() {
       const select = document.getElementById('booth-select');
       select.innerHTML = '';
@@ -145,53 +128,40 @@
       }
     }
 
-    // 切換攤位
     function changeBooth() {
       currentBooth = document.getElementById('booth-select').value;
       document.getElementById('booth-title').innerText = `攤位 ${currentBooth}`;
-      
-      // 更新救援碼 (例如 B01對應 1001, B02對應 1002)
-      const boothNum = parseInt(currentBooth.replace("B", ""));
-      document.getElementById('rescue-code').innerText = (1000 + boothNum).toString();
-
       countdownSeconds = 180;
       updateQRCode();
     }
 
-    // 更新動態 QR Code 內容
     function updateQRCode() {
-  const timeBlock = Math.floor(Date.now() / (1000 * 180)); // 3 分鐘時間區塊
-  const payload = `booth:${currentBooth}:t:${timeBlock}`;
+      const timeBlock = Math.floor(Date.now() / (1000 * 180));
+      const payload = `booth:${currentBooth}:t:${timeBlock}`;
 
-  // 計算動態 4 位數救援碼 (每 3 分鐘改變最後一位/幾位數)
-  const boothNum = parseInt(currentBooth.replace("B", ""));
-  // 算法：1000 + (攤位號 * 10) + (時間區塊 mod 10)
-  const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
-  
-  document.getElementById('rescue-code').innerText = dynamicRescueCode;
+      // 每 3 分鐘動態改變救援碼算法
+      const boothNum = parseInt(currentBooth.replace("B", ""));
+      const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
+      document.getElementById('rescue-code').innerText = dynamicRescueCode;
 
-  // 繪製 QR Code
-  const qrContainer = document.getElementById('qrcode');
-  qrContainer.innerHTML = '';
-  qrcodeInstance = new QRCode(qrContainer, {
-    text: payload,
-    width: 240,
-    height: 240,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
 
-    // 啟動倒數計時與時鐘
+      qrcodeInstance = new QRCode(qrContainer, {
+        text: payload,
+        width: 240,
+        height: 240,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
     function startTimers() {
-      // 每秒更新倒數與時間
       setInterval(() => {
-        // 1. 即時時鐘
         const now = new Date();
         document.getElementById('clock-display').innerText = now.toTimeString().split(' ')[0];
 
-        // 2. 倒數計時器
         countdownSeconds--;
         if (countdownSeconds <= 0) {
           countdownSeconds = 180;
