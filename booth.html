@@ -91,7 +91,7 @@
     <div class="bg-neo-violet border-4 border-neo-black p-4 shadow-neo-lg rotate-2 max-w-xs">
       <div class="font-black text-xs uppercase tracking-wider text-slate-800">相機無法開啟？印章動態碼：</div>
       <div id="rescue-code" class="text-4xl font-black font-mono tracking-widest text-neo-black bg-white border-2 border-neo-black px-3 py-1 my-1 text-center">
-        1010
+        ----
       </div>
       <div class="text-[10px] font-black text-slate-600">訪客可在手機「印章動態碼」輸入上方 4 位數字</div>
     </div>
@@ -157,12 +157,20 @@
       updateQRCode();
     }
 
+    // 隨機 Hash 演算法生成 4 位數 Pin 碼
+    function generateDynamicPin(boothNum, timeBlock) {
+      const SALT = 20261013;
+      let hash = (boothNum * 9301 + timeBlock * 49297 + SALT) % 233280;
+      hash = (hash * 9301 + 49297) % 233280;
+      return 1000 + (Math.abs(hash) % 9000);
+    }
+
     function updateQRCode() {
       const timeBlock = Math.floor(Date.now() / (1000 * 180));
       const payload = 'booth:' + currentBooth + ':t:' + timeBlock;
 
       const boothNum = parseInt(currentBooth.replace("B", ""));
-      const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
+      const dynamicRescueCode = generateDynamicPin(boothNum, timeBlock);
       document.getElementById('rescue-code').innerText = dynamicRescueCode;
 
       const qrContainer = document.getElementById('qrcode');
