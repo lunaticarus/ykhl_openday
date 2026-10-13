@@ -46,7 +46,6 @@
 </head>
 <body class="text-neo-black font-sans min-h-screen flex flex-col justify-between p-6 select-none selection:bg-neo-yellow">
 
-  <!-- 頂部列 -->
   <header class="flex justify-between items-center max-w-4xl mx-auto w-full">
     <div class="flex items-center gap-3">
       <span class="font-black text-sm uppercase bg-neo-black text-white px-3 py-1.5 border-2 border-neo-black shadow-neo-sm">選擇攤位</span>
@@ -62,7 +61,6 @@
     </div>
   </header>
 
-  <!-- 主內容區 -->
   <main class="max-w-2xl mx-auto w-full my-auto py-8">
     <div class="bg-white border-8 border-neo-black p-8 shadow-neo-2xl text-center space-y-6 relative -rotate-1">
       
@@ -89,7 +87,6 @@
     </div>
   </main>
 
-  <!-- 頁尾 -->
   <footer class="max-w-4xl mx-auto w-full flex justify-between items-end">
     <div class="bg-neo-violet border-4 border-neo-black p-4 shadow-neo-lg rotate-2 max-w-xs">
       <div class="font-black text-xs uppercase tracking-wider text-slate-800">相機無法開啟？動態救援碼：</div>
@@ -139,7 +136,6 @@
       const timeBlock = Math.floor(Date.now() / (1000 * 180));
       const payload = `booth:${currentBooth}:t:${timeBlock}`;
 
-      // 每 3 分鐘動態改變救援碼算法
       const boothNum = parseInt(currentBooth.replace("B", ""));
       const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
       document.getElementById('rescue-code').innerText = dynamicRescueCode;
