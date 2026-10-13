@@ -102,7 +102,7 @@
         <h1 class="text-3xl font-black uppercase tracking-tight leading-none text-neo-black">
           楊中開放日<br><span class="bg-neo-yellow px-2 border-2 border-neo-black inline-block mt-1">集章贏大獎</span>
         </h1>
-                  <p class="text-xs font-bold mt-2 text-neo-black/80">提示：全程使用同一瀏覽器，切勿清除快取</p>
+        <p class="text-xs font-bold mt-2 text-neo-black/80">提示：全程使用同一瀏覽器，切勿清除快取</p>
       </div>
     </header>
 
@@ -132,7 +132,7 @@
         📷 開啟鏡頭掃碼
       </button>
       <button onclick="openPinModal()" class="col-span-2 py-4 bg-neo-yellow hover:bg-neo-yellow/90 text-neo-black font-black text-base border-4 border-neo-black shadow-neo-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all uppercase tracking-wide">
-        🔢 手動碼
+        🔢 印章動態碼
       </button>
     </section>
 
@@ -189,11 +189,11 @@
     </div>
   </div>
 
-  <!-- 彈窗 2：手動 4 位數動態救援碼 Modal -->
+  <!-- 彈窗 2：手動 4 位數印章動態碼 Modal -->
   <div id="pin-modal" class="fixed inset-0 bg-neo-black/60 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white border-4 border-neo-black shadow-neo-xl p-6 w-full max-w-sm space-y-4">
-      <h3 class="font-black text-lg text-center uppercase border-b-4 border-neo-black pb-2">輸入 4 位數攤位救援碼</h3>
-      <p class="text-xs font-bold text-center text-slate-600">請查看攤位 iPad 螢幕角落顯示的 4 位數動態碼</p>
+      <h3 class="font-black text-lg text-center uppercase border-b-4 border-neo-black pb-2">輸入 4 位數印章動態碼</h3>
+      <p class="text-xs font-bold text-center text-slate-600">請向攤位服務生領取印章動態碼</p>
       <input id="pin-input" type="number" pattern="[0-9]*" placeholder="例如: 1013" class="w-full text-center text-3xl font-black border-4 border-neo-black p-3 bg-neo-yellow focus:bg-white focus:outline-none">
       <div class="flex gap-2">
         <button onclick="closePinModal()" class="flex-1 py-3 bg-slate-200 border-4 border-neo-black font-black text-sm uppercase">取消</button>
@@ -406,7 +406,7 @@
           requestAnimationFrame(scanQRCode);
         })
         .catch(() => {
-          alert("無法打開相機，請使用「手動碼」。");
+          alert("無法打開相機，請使用「印章動態碼」。");
           stopScanner();
         });
     }
@@ -466,7 +466,7 @@
     function submitPin() {
       const pin = parseInt(document.getElementById('pin-input').value);
       if (isNaN(pin) || pin < 1000) {
-        alert("請輸入有效的 4 位數救援碼！");
+        alert("請輸入有效的印章動態碼！");
         return;
       }
 
@@ -490,7 +490,7 @@
         closePinModal();
         document.getElementById('pin-input').value = '';
       } else {
-        alert("救援碼無效或已過期，請查看攤位螢幕最新的救援碼！");
+        alert("印章動態碼無效或已過期，請向攤位服務生領取印章動態碼！");
       }
     }
 
