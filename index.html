@@ -46,7 +46,7 @@
       width: max-content;
       will-change: transform;
       transform: translateZ(0);
-      animation: marquee-smooth 22s linear infinite;
+      animation: marquee-smooth 25s linear infinite;
     }
 
     .marquee-content {
@@ -70,9 +70,9 @@
 </head>
 <body class="text-neo-black font-sans pb-24 selection:bg-neo-yellow">
 
-  <!-- 置頂跑馬燈 -->
+  <!-- 置頂無縫跑馬燈 -->
   <div class="sticky top-0 z-40 bg-neo-yellow border-b-4 border-neo-black py-2.5 overflow-hidden shadow-neo-sm">
-    <div class="marquee-container">
+    <div id="marquee-track" class="marquee-container">
       <div class="marquee-content font-black text-sm tracking-wide uppercase">
         ⚡ 歡迎光臨學校開放日 2026！集齊 10 個印章換小獎，15 個挑戰大獎！ ⚡
       </div>
@@ -84,14 +84,12 @@
 
   <main class="max-w-md mx-auto p-4 space-y-6">
 
-    <!-- 標頭 Banner (含校徽與角色) -->
+    <!-- 標頭 Banner -->
     <header class="bg-neo-violet border-4 border-neo-black p-5 shadow-neo-lg -rotate-1 relative overflow-hidden">
-      <!-- Role 標籤 -->
       <div id="user-role-badge" class="absolute top-2 right-2 z-10 bg-neo-red border-4 border-neo-black px-3 py-1 font-black text-xs text-white uppercase tracking-widest rotate-3 shadow-neo-sm">
         訪客
       </div>
 
-      <!-- 校徽圖片 -->
       <img 
         src="https://lunaticarus.github.io/classtools/logo.png" 
         alt="校徽" 
@@ -251,6 +249,9 @@
     let boothNames = {};
     let timerInterval = null;
 
+    // 關鍵機制：走馬燈背景暫存變數
+    let pendingMarqueeText = null;
+
     document.addEventListener('DOMContentLoaded', () => {
       if (!userRole) {
         document.getElementById('role-modal').classList.remove('hidden');
@@ -260,9 +261,27 @@
       renderBoothGrid();
       updateProgress();
       
+      initMarqueeSync(); // 初始化無縫跑馬燈同步器
       fetchDataFromBackend();
       setInterval(fetchDataFromBackend, 20000);
     });
+
+    // 關鍵機制：監聽 CSS 動畫每一圈（Cycle）播放結束的瞬間
+    function initMarqueeSync() {
+      const track = document.getElementById('marquee-track');
+      if (!track) return;
+
+      track.addEventListener('animationiteration', () => {
+        // 只有當後端有「新文字」等待更新時，才在動畫剛好重置為 0% 的這一微秒更換
+        if (pendingMarqueeText !== null) {
+          const elements = document.querySelectorAll('.marquee-content');
+          elements.forEach(el => {
+            el.innerText = "⚡ " + pendingMarqueeText + " ⚡";
+          });
+          pendingMarqueeText = null; // 清空暫存，等待下次更新
+        }
+      });
+    }
 
     function selectRole(role) {
       userRole = role;
@@ -299,9 +318,12 @@
       fetch(GAS_API_URL)
         .then(res => res.json())
         .then(data => {
+          // 關鍵修改：不立刻更新 DOM，而是寫入暫存，等待一圈走完無縫替換
           if (data && data.marquee) {
-            const elements = document.querySelectorAll('.marquee-content');
-            elements.forEach(el => { el.innerText = "⚡ " + data.marquee + " ⚡"; });
+            const currentText = document.querySelector('.marquee-content').innerText.replace(/^⚡\s*|\s*⚡$/g, '');
+            if (data.marquee !== currentText) {
+              pendingMarqueeText = data.marquee; // 暫存待更新字串
+            }
           }
           if (data && data.booths) {
             boothNames = data.booths;
@@ -463,7 +485,6 @@
     function openPinModal() { document.getElementById('pin-modal').classList.remove('hidden'); }
     function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
     
-    // 隨機 Hash 演算法生成 4 位數 Pin 碼 (與 iPad 端一致)
     function generateDynamicPin(boothNum, timeBlock) {
       const SALT = 20261013;
       let hash = (boothNum * 9301 + timeBlock * 49297 + SALT) % 233280;
