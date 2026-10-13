@@ -160,22 +160,28 @@
 
     // 更新動態 QR Code 內容
     function updateQRCode() {
-      // 算出當前 3 分鐘時間區塊 Token
-      const timeBlock = Math.floor(Date.now() / (1000 * 180));
-      const payload = `booth:${currentBooth}:t:${timeBlock}`;
+  const timeBlock = Math.floor(Date.now() / (1000 * 180)); // 3 分鐘時間區塊
+  const payload = `booth:${currentBooth}:t:${timeBlock}`;
 
-      const qrContainer = document.getElementById('qrcode');
-      qrContainer.innerHTML = '';
+  // 計算動態 4 位數救援碼 (每 3 分鐘改變最後一位/幾位數)
+  const boothNum = parseInt(currentBooth.replace("B", ""));
+  // 算法：1000 + (攤位號 * 10) + (時間區塊 mod 10)
+  const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
+  
+  document.getElementById('rescue-code').innerText = dynamicRescueCode;
 
-      qrcodeInstance = new QRCode(qrContainer, {
-        text: payload,
-        width: 240,
-        height: 240,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+  // 繪製 QR Code
+  const qrContainer = document.getElementById('qrcode');
+  qrContainer.innerHTML = '';
+  qrcodeInstance = new QRCode(qrContainer, {
+    text: payload,
+    width: 240,
+    height: 240,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
 
     // 啟動倒數計時與時鐘
     function startTimers() {
