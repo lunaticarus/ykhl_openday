@@ -69,7 +69,7 @@
       </div>
 
       <div class="pt-4 space-y-1">
-        <h1 id="booth-title" class="text-5xl font-black uppercase tracking-tight">攤位 B01</h1>
+        <h1 id="booth-title" class="text-4xl font-black uppercase tracking-tight">攤位 B01</h1>
         <p class="text-sm font-bold text-slate-600">請將手機鏡頭對準下方動態 QR Code</p>
       </div>
 
@@ -103,12 +103,15 @@
   </footer>
 
   <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzA4Iuflm5N6faXsrUXPQ8Q68VNfcDysS_3ru281wLymPPxzt92fliq2k7Of0pIdCBcHw/exec";
     let currentBooth = "B01";
     let qrcodeInstance = null;
     let countdownSeconds = 180;
+    let boothMap = {};
 
     document.addEventListener('DOMContentLoaded', () => {
       initBoothSelect();
+      fetchBoothNames();
       updateQRCode();
       startTimers();
     });
@@ -117,24 +120,46 @@
       const select = document.getElementById('booth-select');
       select.innerHTML = '';
       for (let i = 1; i <= 17; i++) {
-        const id = `B${i.toString().padStart(2, '0')}`;
+        const id = 'B' + i.toString().padStart(2, '0');
         const option = document.createElement('option');
         option.value = id;
-        option.innerText = `地點 ${id}`;
+        option.innerText = '地點 ' + id;
         select.appendChild(option);
+      }
+    }
+
+    function fetchBoothNames() {
+      if (!GAS_API_URL || GAS_API_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+      fetch(GAS_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.booths) {
+            boothMap = data.booths;
+            updateBoothTitle();
+          }
+        }).catch(err => console.warn("Fetch booth error:", err));
+    }
+
+    function updateBoothTitle() {
+      const name = boothMap[currentBooth] || '';
+      const titleElem = document.getElementById('booth-title');
+      if (name) {
+        titleElem.innerText = currentBooth + ' ' + name;
+      } else {
+        titleElem.innerText = '攤位 ' + currentBooth;
       }
     }
 
     function changeBooth() {
       currentBooth = document.getElementById('booth-select').value;
-      document.getElementById('booth-title').innerText = `攤位 ${currentBooth}`;
+      updateBoothTitle();
       countdownSeconds = 180;
       updateQRCode();
     }
 
     function updateQRCode() {
       const timeBlock = Math.floor(Date.now() / (1000 * 180));
-      const payload = `booth:${currentBooth}:t:${timeBlock}`;
+      const payload = 'booth:' + currentBooth + ':t:' + timeBlock;
 
       const boothNum = parseInt(currentBooth.replace("B", ""));
       const dynamicRescueCode = 1000 + (boothNum * 10) + (timeBlock % 10);
@@ -166,7 +191,7 @@
 
         const mins = Math.floor(countdownSeconds / 60).toString().padStart(2, '0');
         const secs = (countdownSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('refresh-timer').innerText = `${mins}:${secs}`;
+        document.getElementById('refresh-timer').innerText = mins + ':' + secs;
       }, 1000);
     }
   </script>
