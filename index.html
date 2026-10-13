@@ -364,18 +364,37 @@
     function openPinModal() { document.getElementById('pin-modal').classList.remove('hidden'); }
     function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
     function submitPin() {
-      const pin = document.getElementById('pin-input').value;
-      if (pin.length === 4) {
-        const num = parseInt(pin);
-        if (num >= 1001 && num <= 1017) {
-          addStamp(`B${(num - 1000).toString().padStart(2, '0')}`);
-          closePinModal();
-          document.getElementById('pin-input').value = '';
-        } else {
-          alert("無效的救援碼！");
-        }
+  const pin = parseInt(document.getElementById('pin-input').value);
+  if (isNaN(pin) || pin < 1000) {
+    alert("請輸入有效的 4 位數救援碼！");
+    return;
+  }
+
+  const currentBlock = Math.floor(Date.now() / (1000 * 180));
+  let matchedBooth = null;
+
+  // 遍歷 17 個攤位，比對當前區塊及前後 3 分鐘區塊 (寬限期)
+  for (let i = 1; i <= TOTAL_BOOTHS; i++) {
+    for (let offset = -1; offset <= 1; offset++) {
+      const targetBlock = currentBlock + offset;
+      const validCode = 1000 + (i * 10) + (targetBlock % 10);
+      
+      if (pin === validCode) {
+        matchedBooth = `B${i.toString().padStart(2, '0')}`;
+        break;
       }
     }
+    if (matchedBooth) break;
+  }
+
+  if (matchedBooth) {
+    addStamp(matchedBooth);
+    closePinModal();
+    document.getElementById('pin-input').value = '';
+  } else {
+    alert("救援碼無效或已過期，請查看攤位螢幕最新的救援碼！");
+  }
+}
 
     function triggerRedeem(type) {
       closeRedeemConfirmModal();
